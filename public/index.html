@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>日本語 Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='30' fill='%23bc002d'/></svg>">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="sun"></span> 日本語 Tracker</div>
+    <nav id="nav">
+      <button data-view="dashboard">Dashboard</button>
+      <button data-view="log">Log</button>
+      <button data-view="anki">Anki</button>
+      <button data-view="roadmap">Roadmap</button>
+      <button data-view="library">Library</button>
+      <button data-view="resources">Resources</button>
+      <button data-view="settings">Settings</button>
+    </nav>
+    <div id="timer-chip" class="timer-chip hidden"></div>
+  </header>
+  <main id="app"></main>
+  <div id="toast" class="toast hidden"></div>
+  <script src="content.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+# ── Personal data: never commit ─────────────────────────────
+# Convention: anything for personal use lives in data/ or personal/
+data/
+personal/
+
+# Study data exports / backups (Settings → Export JSON)
+nihongo-tracker-*.json
+tracker.json
+*.bak
+
+# Dictionaries (Yomitan / Yomichan zips, large + third-party licensed)
+yomitan-dictionaries/
+*dictionar*/*.zip
+
+# Anki decks, collections and add-on packages
+*.apkg
+*.colpkg
+*.ankiaddon
+
+# Media you study with (subtitles, books, audio)
+*.epub
+*.srt
+*.ass
+*.mp3
+*.m4a
+*.mp4
+*.mkv
+
+# Secrets (e.g. future jpdb API key)
+.env
+.env.*
+
+# ── Tooling ────────────────────────────────────────────────
+node_modules/
+.DS_Store
+Thumbs.db
