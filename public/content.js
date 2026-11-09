@@ -39,6 +39,162 @@ window.CONTENT = {
     { id: 'bjt',     label: 'BJT Business Japanese (J2+)', note: 'Business-context test; useful on a CV for Japanese companies.' },
   ],
 
+  // Year 1 plan for an absolute beginner. Month 1 starts on Settings → Start date.
+  // targets: cumulative total hours + mature Anki cards by the END of the month.
+  // routine: suggested minutes per day for this month.
+  yearPlan: [
+    {
+      month: 1, title: 'Kana & the sounds of Japanese',
+      focus: 'Read hiragana and katakana fluently, learn how Japanese sounds work, and build a daily listening habit. Start your core deck in week 3.',
+      routine: { 'Kana / Anki': 25, 'Listening (anything you enjoy)': 30, 'Grammar (from week 3)': 10 },
+      targets: { hours: 25, mature: 0 },
+      tasks: [
+        { id: 'y1m1-krashen', text: 'Day 1: watch Stephen Krashen on Comprehensible Input' },
+        { id: 'y1m1-hira', text: 'Week 1: learn all hiragana (Tofugu mnemonics + Anki kana deck)' },
+        { id: 'y1m1-kata', text: 'Week 2: learn all katakana' },
+        { id: 'y1m1-sounds', text: 'Week 2: long vowels, small っ, ん, mora timing (おばさん vs おばあさん)' },
+        { id: 'y1m1-naito', text: 'Watch Kaname Naito “Basics of Japanese Pitch Accent” (just for awareness)' },
+        { id: 'y1m1-kotu', text: 'Take the kotu.io pitch perception test, write down your baseline score' },
+        { id: 'y1m1-kaishi', text: 'Week 3: start Kaishi 1.5k at 10 new cards/day' },
+        { id: 'y1m1-dolly', text: 'Week 3–4: Cure Dolly videos 1–5' },
+        { id: 'y1m1-listen', text: 'Listen/watch Japanese 30 min every day (understanding nothing is OK)' },
+      ],
+    },
+    {
+      month: 2, title: 'First words & sentence structure',
+      focus: 'Steady core vocabulary and the core structure of Japanese sentences: particles, は vs が, verbs at the end.',
+      routine: { 'Anki (Kaishi)': 25, 'Grammar': 15, 'Listening / watching': 35 },
+      targets: { hours: 55, mature: 100 },
+      tasks: [
+        { id: 'y1m2-kaishi', text: 'Kaishi 1.5k: 10–15 new/day, never skip reviews (~400 words seen)' },
+        { id: 'y1m2-dolly', text: 'Cure Dolly videos 6–20' },
+        { id: 'y1m2-taekim', text: 'Tae Kim: Basic Grammar — state of being, particles, verbs, negative, past' },
+        { id: 'y1m2-tadoku0', text: 'Read 5 Tadoku level 0 graded readers (free)' },
+        { id: 'y1m2-shadow', text: 'Shadow 5 min a few times/week (repeat audio lines out loud)' },
+      ],
+    },
+    {
+      month: 3, title: 'Grammar foundation complete',
+      focus: 'Finish Tae Kim Basic Grammar and start reading easy material every day.',
+      routine: { 'Anki (Kaishi)': 25, 'Grammar': 15, 'Reading': 20, 'Listening / watching': 30 },
+      targets: { hours: 90, mature: 350 },
+      tasks: [
+        { id: 'y1m3-kaishi', text: 'Kaishi 1.5k: ~800 words seen' },
+        { id: 'y1m3-taekim', text: 'Tae Kim: finish Basic Grammar (adjectives, verb particles, relative clauses)' },
+        { id: 'y1m3-tadoku1', text: 'Tadoku level 1 readers + NHK News Web Easy (1 article/day)' },
+        { id: 'y1m3-jpsubs', text: 'Watch one episode of a simple anime with Japanese subtitles' },
+        { id: 'y1m3-setup', text: 'Finish Yomitan setup: dictionaries imported, Anki fields mapped, test on a webpage' },
+      ],
+    },
+    {
+      month: 4, title: 'Start mining with Yomitan',
+      focus: 'Finish your first ~1,200 core words and begin adding words from real content with Yomitan.',
+      routine: { 'Anki (core + mining)': 30, 'Grammar': 10, 'Reading': 30, 'Listening / watching': 30 },
+      targets: { hours: 135, mature: 650 },
+      tasks: [
+        { id: 'y1m4-kaishi', text: 'Kaishi 1.5k: ~1,200 words seen' },
+        { id: 'y1m4-mine', text: 'Mine your first 50 words with Yomitan into the Mining deck' },
+        { id: 'y1m4-taekim', text: 'Tae Kim: start Essential Grammar (polite form, て-form, potential, conditionals)' },
+        { id: 'y1m4-manga', text: 'Start an easy manga (e.g. よつばと!) or a children’s book' },
+        { id: 'y1m4-ttsu', text: 'Load your first EPUB into ttsu reader and log characters read' },
+      ],
+    },
+    {
+      month: 5, title: 'Core deck done',
+      focus: 'Finish Kaishi; mining becomes your main source of new cards.',
+      routine: { 'Anki (core + mining)': 30, 'Grammar': 10, 'Reading': 35, 'Listening / watching': 40 },
+      targets: { hours: 185, mature: 950 },
+      tasks: [
+        { id: 'y1m5-kaishi', text: 'Finish Kaishi 1.5k (all cards introduced)' },
+        { id: 'y1m5-mine', text: 'Mining 5–10 new words/day' },
+        { id: 'y1m5-taekim', text: 'Tae Kim: continue Essential Grammar' },
+        { id: 'y1m5-n5', text: 'Do a JLPT N5 practice test (just to see where you are)' },
+        { id: 'y1m5-podcast', text: 'Try a beginner podcast (e.g. Nihongo con Teppei for beginners)' },
+      ],
+    },
+    {
+      month: 6, title: 'First real native content',
+      focus: 'Finish a full season of anime/drama in Japanese, and start speaking.',
+      routine: { 'Anki': 30, 'Reading': 35, 'Listening / watching': 50, 'Speaking / shadowing': 10 },
+      targets: { hours: 240, mature: 1250 },
+      tasks: [
+        { id: 'y1m6-season', text: 'Finish a full season of a slice-of-life anime with Japanese subs' },
+        { id: 'y1m6-tutor', text: 'Book your first tutor lesson (italki etc.), then 1×/week' },
+        { id: 'y1m6-dogen', text: 'Start Dogen’s pitch-accent series (first episodes)' },
+        { id: 'y1m6-taekim', text: 'Tae Kim: finish Essential Grammar' },
+        { id: 'y1m6-jlpt', text: 'Check JLPT dates and register for the next sitting (N4, or N3 if ready)' },
+      ],
+    },
+    {
+      month: 7, title: 'Reading momentum',
+      focus: 'Read native material daily; aim for your first full manga volume or easy light novel.',
+      routine: { 'Anki': 30, 'Reading': 45, 'Listening / watching': 50, 'Speaking / shadowing': 10 },
+      targets: { hours: 300, mature: 1550 },
+      tasks: [
+        { id: 'y1m7-volume', text: 'Finish one full manga volume or easy book' },
+        { id: 'y1m7-special', text: 'Tae Kim: Special Expressions section' },
+        { id: 'y1m7-mine', text: 'Mining 10–15/day; keep daily reviews under ~45 min' },
+        { id: 'y1m7-speed', text: 'Note your ttsu reading speed (chars/hour) for later comparison' },
+      ],
+    },
+    {
+      month: 8, title: 'Listening without pictures',
+      focus: 'Podcasts and condensed audio to train pure listening; start writing short sentences.',
+      routine: { 'Anki': 30, 'Reading': 45, 'Listening (podcasts / condensed audio)': 60, 'Speaking / writing': 15 },
+      targets: { hours: 365, mature: 1850 },
+      tasks: [
+        { id: 'y1m8-podcasts', text: 'Find 3 podcasts you can follow ~50% of' },
+        { id: 'y1m8-condensed', text: 'Make condensed audio of a show you watched and listen while commuting/cleaning' },
+        { id: 'y1m8-diary', text: 'Write 3 short diary sentences a day and get corrections (tutor / LangCorrect)' },
+        { id: 'y1m8-dogen', text: 'Continue Dogen pitch-accent series' },
+      ],
+    },
+    {
+      month: 9, title: 'First novel',
+      focus: 'Finish your first light novel or visual novel; start using a Japanese–Japanese dictionary sometimes.',
+      routine: { 'Anki': 30, 'Reading': 60, 'Listening / watching': 60, 'Speaking / writing': 15 },
+      targets: { hours: 435, mature: 2150 },
+      tasks: [
+        { id: 'y1m9-novel', text: 'Finish your first light novel or visual novel' },
+        { id: 'y1m9-mono', text: 'Use a monolingual dictionary for easy lookups (add one to Yomitan)' },
+        { id: 'y1m9-kotu', text: 'Re-take the kotu.io pitch test and compare with your baseline' },
+      ],
+    },
+    {
+      month: 10, title: 'Speaking more',
+      focus: 'Increase speaking to twice a week; finish Tae Kim completely.',
+      routine: { 'Anki': 30, 'Reading': 60, 'Listening / watching': 60, 'Speaking': 20 },
+      targets: { hours: 510, mature: 2450 },
+      tasks: [
+        { id: 'y1m10-taekim', text: 'Tae Kim: Advanced Topics (keigo intro, formal expressions)' },
+        { id: 'y1m10-tutor', text: 'Tutor / conversation 2×/week' },
+        { id: 'y1m10-n3mock', text: 'Do a JLPT N3 practice test' },
+      ],
+    },
+    {
+      month: 11, title: 'Drop the English',
+      focus: 'Watch without English subtitles at all; mostly native content.',
+      routine: { 'Anki': 30, 'Reading': 60, 'Listening / watching': 75, 'Speaking': 20 },
+      targets: { hours: 590, mature: 2750 },
+      tasks: [
+        { id: 'y1m11-noeng', text: 'A full month with no English subtitles' },
+        { id: 'y1m11-news', text: 'Read or listen to regular (not Easy) NHK news once a week' },
+        { id: 'y1m11-intro', text: 'Be able to introduce yourself + your job/goals for 2 minutes without notes' },
+      ],
+    },
+    {
+      month: 12, title: 'Review the year & plan year 2',
+      focus: 'Check your progress, sit the JLPT if registered, and set year 2 goals (N2, business Japanese).',
+      routine: { 'Anki': 30, 'Reading': 60, 'Listening / watching': 75, 'Speaking': 20 },
+      targets: { hours: 675, mature: 3000 },
+      tasks: [
+        { id: 'y1m12-jlpt', text: 'Sit JLPT N4/N3 (or a full mock test)' },
+        { id: 'y1m12-review', text: 'Review the tracker: hours, mature cards, reading speed, pitch score' },
+        { id: 'y1m12-plan', text: 'Set year 2 goals in Settings (target hours, target date)' },
+      ],
+    },
+  ],
+
   roadmap: [
     {
       id: 'p0', title: 'Phase 0 — Setup the toolchain', goal: 'Get Anki, Yomitan and your reading/listening tools wired together so mining is one click.',

@@ -347,6 +347,19 @@ views.dashboard = () => {
     </div>
   </div>
 
+  ${(() => {
+    const cur = currentPlanMonth();
+    const m = C.yearPlan.find((x) => x.month === cur);
+    if (!m) return '';
+    const next = m.tasks.filter((t) => !state.checklist[t.id]).slice(0, 3);
+    const p = planTaskProgress(m);
+    return `<div class="card">
+      <div class="spread"><h2>This month: ${esc(m.title)}</h2><button class="btn small" data-act="goto" data-id="year">Year 1 plan →</button></div>
+      <div class="small muted">Month ${m.month} of 12 · ${p.done}/${p.total} tasks done</div>
+      <ul class="checklist">${next.map((t) => `<li><input type="checkbox" data-act="check" data-id="${t.id}"><span>${esc(t.text)}</span></li>`).join('') || '<li>All tasks done for this month 🎉</li>'}</ul>
+    </div>`;
+  })()}
+
   <div class="card">
     <div class="spread"><h2>Daily immersion — last 6 months</h2>
       <div class="legend">less ${[0, 1, 2, 3, 4].map((i) => `<i style="background:var(--heat-${i})"></i>`).join('')} goal</div></div>
@@ -446,6 +459,215 @@ views.anki = () => {
     </ol>
     <p class="small muted">This tracker talks to AnkiConnect through the local server, so you don’t need to edit AnkiConnect’s CORS settings.</p>
   </div>`;
+};
+
+// ---------- Learn: kana chart, quiz, starter decks ----------
+const learn = {
+  script: 'Hiragana',
+  quizGroups: ['basic'],
+  quizScript: 'Hiragana',
+  q: null, last: null, right: 0, total: 0, missed: {},
+  setupMsg: {},
+};
+
+function quizPool() {
+  const K = window.KANA;
+  const pool = [];
+  for (const g of K.groups) if (learn.quizGroups.includes(g.id))
+    for (const [h, k, r] of g.rows) {
+      if (learn.quizScript !== 'Katakana') pool.push({ kana: h, romaji: r });
+      if (learn.quizScript !== 'Hiragana') pool.push({ kana: k, romaji: r });
+    }
+  if (learn.quizGroups.includes('extended') && learn.quizScript !== 'Hiragana')
+    for (const [k, r] of K.extendedKatakana) pool.push({ kana: k, romaji: r });
+  return pool;
+}
+
+function nextQuestion() {
+  const pool = quizPool();
+  if (!pool.length) { learn.q = null; return; }
+  // weight missed kana higher so you see your weak ones more
+  const weighted = pool.flatMap((p) => Array(1 + 2 * (learn.missed[p.kana] || 0)).fill(p));
+  let q;
+  do { q = weighted[Math.floor(Math.random() * weighted.length)]; } while (pool.length > 1 && learn.q && q.kana === learn.q.kana);
+  learn.q = q;
+}
+
+const romajiAnswers = (r) => r.replace(/[()]/g, ' ').split(/\s+/).filter(Boolean);
+
+function kanaTable(rows, idx) {
+  const cells = rows.map((row) => `<div class="kana-cell" title="${esc(row[2])}"><div class="k">${esc(row[idx])}</div><div class="r">${esc(row[2])}</div></div>`);
+  return `<div class="kana-grid">${cells.join('')}</div>`;
+}
+
+views.learn = () => {
+  const K = window.KANA;
+  const idx = learn.script === 'Hiragana' ? 0 : 1;
+  if (!learn.q) nextQuestion();
+  const acc = learn.total ? Math.round((learn.right / learn.total) * 100) : null;
+  const weak = Object.entries(learn.missed).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 12);
+  const msg = (k) => learn.setupMsg[k] ? `<div class="notice ${learn.setupMsg[k].ok ? 'ok' : ''} small" style="margin-top:.5rem">${esc(learn.setupMsg[k].text)}</div>` : '';
+  return `
+  <div class="card">
+    <h2>Starter Anki decks</h2>
+    <p class="small muted">Creates cards straight in Anki. Anki must be open. Safe to click again: existing cards are never duplicated.</p>
+    <div class="grid two">
+      <div>
+        <h3>1 · Kana deck <span class="pill">month 1</span></h3>
+        <p class="small">All hiragana and katakana (basic, ゛゜, combinations, plus extended katakana): ${K.cards().length} cards in the <code>Kana</code> deck, in learning order. Set new cards/day to ~20 in Anki’s deck options.</p>
+        <button class="btn primary" data-act="setup-kana">Create kana cards</button>${msg('kana')}
+      </div>
+      <div>
+        <h3>2 · Kaishi 1.5k core deck <span class="pill">month 1, week 3+</span></h3>
+        <p class="small">The 1,500 most useful beginner words with audio and example sentences. Downloads from GitHub (~110 MB) and imports into Anki. Do 10–15 new/day.</p>
+        <button class="btn primary" data-act="setup-kaishi">Download & import Kaishi</button>${msg('kaishi')}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <div class="spread"><h2>Kana quiz</h2><span class="small muted">${acc == null ? '' : `${learn.right}/${learn.total} · ${acc}%`}</span></div>
+      <div class="row small" style="margin-bottom:.5rem">
+        ${['Hiragana', 'Katakana', 'Both'].map((s) => `<label class="row"><input type="radio" name="qs" data-act="quiz-script" value="${s}" ${learn.quizScript === s ? 'checked' : ''}> ${s}</label>`).join('')}
+      </div>
+      <div class="row small" style="margin-bottom:.75rem">
+        ${[...K.groups.map((g) => [g.id, g.label]), ['extended', 'Extended katakana']].map(([id, label]) => `<label class="row"><input type="checkbox" data-act="quiz-group" value="${id}" ${learn.quizGroups.includes(id) ? 'checked' : ''}> ${esc(label)}</label>`).join('')}
+      </div>
+      ${learn.q ? `
+        <div class="quiz-kana">${esc(learn.q.kana)}</div>
+        <form id="quiz-form" class="row" style="justify-content:center">
+          <input id="quiz-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type romaji, Enter" style="width:200px;text-align:center">
+          <button class="btn">Check</button>
+        </form>
+        <div class="quiz-feedback">${learn.last ? (learn.last.ok ? `<span class="pill good">✓ ${esc(learn.last.kana)} = ${esc(learn.last.romaji)}</span>` : `<span class="pill accent">✗ ${esc(learn.last.kana)} = ${esc(learn.last.romaji)} (you typed “${esc(learn.last.typed)}”)</span>`) : '&nbsp;'}</div>
+      ` : '<p class="muted">Pick at least one group.</p>'}
+      ${weak.length ? `<div class="small muted" style="margin-top:.5rem">Practising more: ${weak.map(([k, n]) => `<span class="pill">${esc(k)} ×${n}</span>`).join(' ')}</div>` : ''}
+      <div class="row" style="margin-top:.75rem"><button class="btn small" data-act="quiz-reset">Reset score</button><button class="btn small" data-act="quiz-log">Log practice time</button></div>
+    </div>
+
+    <div class="card">
+      <div class="spread"><h2>Kana chart</h2>
+        <div class="row">${['Hiragana', 'Katakana'].map((s) => `<button class="btn small ${learn.script === s ? 'primary' : ''}" data-act="chart-script" data-id="${s}">${s}</button>`).join('')}</div></div>
+      ${K.groups.map((g) => `<h3 class="small muted" style="margin-top:.75rem">${esc(g.label)}</h3>${kanaTable(g.rows, idx)}`).join('')}
+      ${learn.script === 'Katakana' ? `<h3 class="small muted" style="margin-top:.75rem">Extended katakana</h3>${kanaTable(K.extendedKatakana.map(([k, r]) => [k, k, r]), 1)}` : ''}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Sound rules to know in week 2</h2>
+    <table><tbody>
+      <tr><td style="width:30%"><b>Long vowels</b></td><td>Hold the vowel twice as long: おばさん (aunt) vs <b>おばあさん</b> (grandmother). Katakana uses ー: コーヒー.</td></tr>
+      <tr><td><b>Small っ / ッ</b></td><td>A short pause that doubles the next consonant: きて (come) vs <b>きって</b> (stamp).</td></tr>
+      <tr><td><b>ん</b></td><td>Its own beat. こんにちは = ko-n-ni-chi-wa (5 beats).</td></tr>
+      <tr><td><b>Mora timing</b></td><td>Every kana is one equal beat. とうきょう = to-o-kyo-o (4 beats).</td></tr>
+      <tr><td><b>Particles は / へ / を</b></td><td>As particles they are read <b>wa</b>, <b>e</b>, <b>o</b>.</td></tr>
+      <tr><td><b>Pitch accent</b></td><td>Japanese uses high/low pitch, not stress: はし can be <i>chopsticks</i> or <i>bridge</i>. Just notice it for now (Kaname Naito video).</td></tr>
+    </tbody></table>
+  </div>`;
+};
+
+async function runSetup(kind, btn) {
+  btn.disabled = true; btn.textContent = kind === 'kaishi' ? 'Downloading & importing…' : 'Creating cards…';
+  try {
+    const r = await fetch(`/api/setup/${kind}`, { method: 'POST' });
+    const j = await r.json();
+    if (j.error) throw new Error(j.error);
+    learn.setupMsg[kind] = { ok: true, text: kind === 'kana'
+      ? `Done: ${j.added} cards added to “${j.deck}”${j.alreadyThere ? `, ${j.alreadyThere} were already there` : ''}.`
+      : j.skipped ? j.message : `Imported Kaishi into Anki (${(j.decks || []).join(', ')}).` };
+    if (kind === 'kaishi' && j.decks?.length && !state.settings.decks.some((d) => /kaishi/i.test(d))) state.settings.decks.push(j.decks[0]);
+    if (kind === 'kana' && !state.settings.decks.includes('Kana')) state.settings.decks.push('Kana');
+    save();
+  } catch (e) {
+    learn.setupMsg[kind] = { ok: false, text: e.message };
+  }
+  render();
+}
+
+// ---------- Year 1 plan ----------
+const addMonths = (d, n) => { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; };
+
+function planMonthRange(month) {
+  const start = parseYmd(state.settings.startDate || today());
+  return { from: addMonths(start, month - 1), to: addDays(addMonths(start, month), -1) };
+}
+
+function currentPlanMonth() {
+  for (const m of C.yearPlan) {
+    const { to } = planMonthRange(m.month);
+    if (ymd(to) >= today()) return m.month;
+  }
+  return C.yearPlan.length + 1; // year finished
+}
+
+function hoursUpTo(dateStr) {
+  let min = state.settings.startingHours * 60;
+  for (const l of state.logs) if (l.date <= dateStr) min += Number(l.minutes || 0);
+  return min / 60;
+}
+
+function matureUpTo(dateStr) {
+  const keys = Object.keys(state.ankiSnapshots).filter((k) => k <= dateStr).sort();
+  return keys.length ? state.ankiSnapshots[keys[keys.length - 1]].mature : null;
+}
+
+function planTaskProgress(m) {
+  const done = m.tasks.filter((t) => state.checklist[t.id]).length;
+  return { done, total: m.tasks.length };
+}
+
+views.year = () => {
+  const cur = currentPlanMonth();
+  const dateOpts = { month: 'short', day: 'numeric', year: 'numeric' };
+  const allTasks = C.yearPlan.flatMap((m) => m.tasks);
+  const doneAll = allTasks.filter((t) => state.checklist[t.id]).length;
+  return `
+  <div class="card">
+    <div class="spread"><h2>Year 1: from zero to reading native content</h2>
+      <span class="pill accent">${cur > 12 ? 'Year complete 🎉' : `You are in month ${cur}`}</span></div>
+    <div class="bar"><span style="width:${pct(doneAll, allTasks.length)}%"></span></div>
+    <p class="small muted">${doneAll}/${allTasks.length} tasks done · Month 1 starts on your start date (${esc(state.settings.startDate)}). You can change it in Settings.
+    Targets are cumulative study hours and mature Anki cards (≈ words you know well) by the end of each month. They're a guide, not a test: being behind is fine as long as you show up daily.</p>
+  </div>
+  ${C.yearPlan.map((m) => {
+    const { from, to } = planMonthRange(m.month);
+    const isCur = m.month === cur, isPast = m.month < cur;
+    const p = planTaskProgress(m);
+    const checkDate = isPast ? ymd(to) : today();
+    const hrs = hoursUpTo(checkDate), mat = matureUpTo(checkDate);
+    const showActual = isPast || isCur;
+    const status = isPast ? (p.done === p.total ? '<span class="pill good">done</span>' : `<span class="pill warn">${p.done}/${p.total}</span>`)
+      : isCur ? '<span class="pill accent">now</span>' : `<span class="pill">${p.done}/${p.total}</span>`;
+    const routineTotal = Object.values(m.routine).reduce((a, b) => a + b, 0);
+    return `<details class="card month ${isCur ? 'current' : ''}" ${isCur ? 'open' : ''}>
+      <summary class="spread">
+        <span><span class="caret">▸</span> <b>Month ${m.month}: ${esc(m.title)}</b> <span class="muted small">${from.toLocaleDateString(undefined, dateOpts)} – ${to.toLocaleDateString(undefined, dateOpts)}</span></span>
+        ${status}
+      </summary>
+      <p>${esc(m.focus)}</p>
+      <div class="grid two">
+        <div>
+          <h3>Tasks</h3>
+          <ul class="checklist">${m.tasks.map((t) => `
+            <li class="${state.checklist[t.id] ? 'done' : ''}"><input type="checkbox" data-act="check" data-id="${t.id}" ${state.checklist[t.id] ? 'checked' : ''}>
+            <span>${esc(t.text)}</span></li>`).join('')}</ul>
+        </div>
+        <div>
+          <h3>Daily routine <span class="muted small">≈ ${hm(routineTotal)}/day</span></h3>
+          ${Object.entries(m.routine).map(([k, v]) => `
+            <div class="hbar-row"><span class="small">${esc(k)}</span><div class="bar"><span style="width:${pct(v, 75)}%"></span></div><span class="num small">${v}m</span></div>`).join('')}
+          <h3 style="margin-top:1rem">End-of-month targets</h3>
+          <div class="hbar-row"><span class="small">Total hours</span>
+            <div class="bar ${showActual && hrs >= m.targets.hours ? 'good' : ''}"><span style="width:${showActual ? pct(hrs, m.targets.hours) : 0}%"></span></div>
+            <span class="num small">${showActual ? fmt(hrs, 0) + ' / ' : ''}${m.targets.hours}h</span></div>
+          ${m.targets.mature ? `<div class="hbar-row"><span class="small">Mature cards</span>
+            <div class="bar ${showActual && mat >= m.targets.mature ? 'good' : ''}"><span style="width:${showActual && mat != null ? pct(mat, m.targets.mature) : 0}%"></span></div>
+            <span class="num small">${showActual && mat != null ? fmt(mat) + ' / ' : ''}${fmt(m.targets.mature)}</span></div>` : '<div class="small muted">No card target this month, just kana.</div>'}
+        </div>
+      </div>
+    </details>`;
+  }).join('')}`;
 };
 
 views.roadmap = () => {
@@ -569,6 +791,14 @@ document.addEventListener('click', async (e) => {
   if (act === 'timer-start') startTimer($('#t-type').value, $('#t-title').value.trim());
   else if (act === 'timer-stop') stopTimer();
   else if (act === 'timer-cancel') { if (confirm('Discard this timer?')) { state.timer = null; save(); render(); } }
+  else if (act === 'goto') go(id);
+  else if (act === 'setup-kana' || act === 'setup-kaishi') await runSetup(act.slice(6), el);
+  else if (act === 'chart-script') { learn.script = id; render(); }
+  else if (act === 'quiz-reset') { Object.assign(learn, { right: 0, total: 0, missed: {}, last: null }); render(); }
+  else if (act === 'quiz-log') {
+    const m = Number(prompt('Minutes of kana practice to log?', '15'));
+    if (m > 0) { state.logs.push({ id: uid(), date: today(), type: 'anki', minutes: m, title: 'Kana practice', chars: 0, notes: '' }); save(); toast(`Logged ${hm(m)}.`); }
+  }
   else if (act === 'del-log') { if (confirm('Delete this entry?')) { state.logs = state.logs.filter((l) => l.id !== id); save(); render(); } }
   else if (act === 'anki-refresh') { el.disabled = true; el.textContent = 'Refreshing…'; await refreshAnki(); render(); }
   else if (act === 'anki-load-decks') await loadDecks();
@@ -586,6 +816,11 @@ document.addEventListener('change', async (e) => {
   if (act === 'check') {
     if (el.checked) state.checklist[id] = today(); else delete state.checklist[id];
     save(); render();
+  } else if (act === 'quiz-script') {
+    learn.quizScript = el.value; learn.q = null; render(); $('#quiz-input')?.focus();
+  } else if (act === 'quiz-group') {
+    learn.quizGroups = el.checked ? [...learn.quizGroups, el.value] : learn.quizGroups.filter((g) => g !== el.value);
+    learn.q = null; render(); $('#quiz-input')?.focus();
   } else if (act === 'cert') {
     state.certs[id] = { ...(state.certs[id] || {}), [el.dataset.field]: el.value };
     save();
@@ -614,6 +849,17 @@ document.addEventListener('change', async (e) => {
 document.addEventListener('submit', (e) => {
   e.preventDefault();
   const f = e.target, fd = Object.fromEntries(new FormData(f));
+  if (f.id === 'quiz-form') {
+    const typed = $('#quiz-input').value.trim().toLowerCase();
+    if (!typed || !learn.q) return;
+    const ok = romajiAnswers(learn.q.romaji).includes(typed);
+    learn.total++; if (ok) learn.right++;
+    if (ok) { if (learn.missed[learn.q.kana]) learn.missed[learn.q.kana]--; }
+    else learn.missed[learn.q.kana] = (learn.missed[learn.q.kana] || 0) + 1;
+    learn.last = { ...learn.q, ok, typed };
+    nextQuestion(); render(); $('#quiz-input')?.focus();
+    return;
+  }
   if (f.id === 'log-form') {
     state.logs.push({ id: uid(), date: fd.date, type: fd.type, minutes: Number(fd.minutes), title: fd.title.trim(), chars: Number(fd.chars) || 0, notes: fd.notes.trim() });
     save(); render(); toast(`Logged ${hm(fd.minutes)}.`);
